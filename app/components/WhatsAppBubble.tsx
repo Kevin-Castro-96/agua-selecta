@@ -13,7 +13,7 @@ export default function WhatsAppBubble() {
 
   const handleClick = () => {
     // Reemplaza el número con el tuyo (formato internacional sin + ni espacios)
-    const phoneNumber = "5493516862090";
+    const phoneNumber = "7711527931";
     const message = encodeURIComponent(
       "¡Hola! Quiero más información sobre Agua Selecta 💧",
     );

@@ -17,7 +17,7 @@ export default function ContactForm() {
 
   const [location, setLocation] = useState<string>("");
   const [coords, setCoords] = useState<any>(null);
-  const [mapCenter, setMapCenter] = useState<any>([20.1011, -98.7591]);
+  const [mapCenter, setMapCenter] = useState<any>(null);
 
   // 📍 Geolocalización automática
   useEffect(() => {
@@ -65,6 +65,32 @@ export default function ContactForm() {
       );
 
       setSuccess(true);
+
+      // ✅ Obtener datos del formulario
+      const formData = new FormData(formRef.current);
+      const name = formData.get("user_name");
+      const phone = formData.get("user_phone");
+      const address = formData.get("user_address");
+
+      // ✅ Mensaje personalizado
+      const message = encodeURIComponent(
+        `Hola, soy ${name}.
+Quiero hacer un pedido de Agua Selecta 💧
+
+📞 Teléfono: ${phone}
+📍 Dirección: ${address}
+🌎 Ubicación: ${location}
+🧭 Coordenadas: ${coords?.lat}, ${coords?.lng}`,
+      );
+
+      // ⚠️ IMPORTANTE: número en formato internacional (México = 52)
+      const phoneNumber = "7711527931";
+
+      // ✅ Redirección a WhatsApp (con pequeño delay opcional)
+      setTimeout(() => {
+        window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+      }, 1000);
+
       formRef.current.reset();
     } catch (error) {
       console.error(error);
@@ -76,7 +102,10 @@ export default function ContactForm() {
 
   return (
     <section className="bg-gradient-to-l from-blue-400 via-blue-500 to-blue-700 text-white py-20 px-6">
-      <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
+      <div
+        id="contacto"
+        className="container mx-auto grid md:grid-cols-2 gap-12 items-center"
+      >
         {/* Texto */}
         <div>
           <h2 className="text-4xl font-bold mb-6">Contáctanos</h2>
@@ -135,12 +164,14 @@ export default function ContactForm() {
             <label className="font-semibold">Selecciona tu ubicación</label>
 
             <div className="h-64 w-full rounded overflow-hidden  mt-2 relative z-0">
-              <MapPicker
-                mapCenter={mapCenter}
-                coords={coords}
-                setCoords={setCoords}
-                setLocation={setLocation}
-              />
+              {mapCenter && (
+                <MapPicker
+                  mapCenter={mapCenter}
+                  coords={coords}
+                  setCoords={setCoords}
+                  setLocation={setLocation}
+                />
+              )}
             </div>
 
             {/* Dirección detectada */}
