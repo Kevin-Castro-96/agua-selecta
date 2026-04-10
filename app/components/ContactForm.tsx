@@ -1,26 +1,67 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import emailjs from "@emailjs/browser";
+import dynamic from "next/dynamic";
+
+// 👉 Import dinámico del mapa (sin SSR)
+const MapPicker = dynamic(() => import("./MapPicker"), {
+  ssr: false,
+});
 
 export default function ContactForm() {
   const formRef = useRef<HTMLFormElement>(null);
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const [location, setLocation] = useState<string>("");
+  const [coords, setCoords] = useState<any>(null);
+  const [mapCenter, setMapCenter] = useState<any>([-31.34, -64.33]); // Córdoba default
+
+  // 📍 Geolocalización automática
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+
+        setCoords({ lat: latitude, lng: longitude });
+        setMapCenter([latitude, longitude]);
+
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+          );
+          const data = await res.json();
+
+          setLocation(
+            data.display_name || `Lat: ${latitude}, Lng: ${longitude}`,
+          );
+        } catch {
+          setLocation(`Lat: ${latitude}, Lng: ${longitude}`);
+        }
+      },
+      () => {
+        setLocation("Ubicación no disponible");
+      },
+    );
+  }, []);
+
+  // 📤 Enviar formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!formRef.current) return;
 
     setLoading(true);
 
     try {
       await emailjs.sendForm(
-        "YOUR_SERVICE_ID",
-        "YOUR_TEMPLATE_ID",
-        formRef.current,
-        "YOUR_PUBLIC_KEY",
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        formRef.current!,
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!,
       );
 
       setSuccess(true);
@@ -34,12 +75,9 @@ export default function ContactForm() {
   };
 
   return (
-    <section
-      id="contacto"
-      className="bg-linear-to-l from-blue-400 via-blue-500 to-blue-700 text-white py-20 px-6"
-    >
+    <section className="bg-gradient-to-l from-blue-400 via-blue-500 to-blue-700 text-white py-20 px-6">
       <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
-        {/* Lado izquierdo */}
+        {/* Texto */}
         <div>
           <h2 className="text-4xl font-bold mb-6">Contáctanos</h2>
           <p className="text-lg leading-relaxed">
@@ -54,66 +92,91 @@ export default function ContactForm() {
         </div>
 
         {/* Formulario */}
-        <div>
-          <form
-            ref={formRef}
-            onSubmit={handleSubmit}
-            className="bg-white rounded-lg shadow-lg p-8 space-y-6 text-gray-800"
-          >
-            {/* Nombre */}
-            <div>
-              <label className="block font-semibold mb-2">Nombre</label>
-              <input
-                type="text"
-                name="user_name"
-                placeholder="Tu nombre"
-                required
-                className="w-full border rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          className="bg-white text-gray-800 rounded-lg shadow-lg p-8 space-y-6"
+        >
+          {/* Nombre */}
+          <div>
+            <label className="font-semibold">Nombre</label>
+            <input
+              type="text"
+              name="user_name"
+              required
+              className="w-full border p-3 rounded"
+            />
+          </div>
+
+          {/* Teléfono */}
+          <div>
+            <label className="font-semibold">Teléfono</label>
+            <input
+              type="tel"
+              name="user_phone"
+              required
+              className="w-full border p-3 rounded"
+            />
+          </div>
+
+          {/* Dirección manual */}
+          <div>
+            <label className="font-semibold">Dirección</label>
+            <input
+              type="text"
+              name="user_address"
+              required
+              className="w-full border p-3 rounded"
+            />
+          </div>
+
+          {/* MAPA */}
+          <div>
+            <label className="font-semibold">Selecciona tu ubicación</label>
+
+            <div className="h-64 w-full rounded overflow-hidden mt-2">
+              <MapPicker
+                mapCenter={mapCenter}
+                coords={coords}
+                setCoords={setCoords}
+                setLocation={setLocation}
               />
             </div>
 
-            {/* Teléfono */}
-            <div>
-              <label className="block font-semibold mb-2">
-                Número de teléfono
-              </label>
-              <input
-                type="tel"
-                name="user_phone"
-                placeholder="Tu número"
-                required
-                className="w-full border rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            {/* Dirección detectada */}
+            {location && (
+              <p className="text-sm mt-2 text-gray-600">📍 {location}</p>
+            )}
 
-            {/* Dirección */}
-            <div>
-              <label className="block font-semibold mb-2">Dirección</label>
-              <input
-                type="text"
-                name="user_address"
-                placeholder="Tu dirección"
-                required
-                className="w-full border rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Botón */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded font-semibold transition"
-            >
-              {loading ? "Enviando..." : "Enviar mensaje"}
-            </button>
-
-            {success && (
-              <p className="text-green-600 text-center">
-                ✅ Mensaje enviado correctamente
+            {/* Coordenadas */}
+            {coords && (
+              <p className="text-xs text-gray-500">
+                Coordenadas: {coords.lat}, {coords.lng}
               </p>
             )}
-          </form>
-        </div>
+          </div>
+
+          {/* Hidden fields */}
+          <input type="hidden" name="user_location" value={location} />
+          <input type="hidden" name="user_lat" value={coords?.lat || ""} />
+          <input type="hidden" name="user_lng" value={coords?.lng || ""} />
+
+          {/* Botón */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-3 rounded"
+          >
+            {loading ? "Enviando..." : "Enviar"}
+          </button>
+
+          {/* Mensaje éxito */}
+          {success && (
+            <p className="text-green-600 text-center">
+              ✅ Enviado correctamente
+            </p>
+          )}
+        </form>
       </div>
     </section>
   );
