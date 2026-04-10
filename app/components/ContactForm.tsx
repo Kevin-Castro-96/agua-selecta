@@ -17,7 +17,7 @@ export default function ContactForm() {
 
   const [location, setLocation] = useState<string>("");
   const [coords, setCoords] = useState<any>(null);
-  const [mapCenter, setMapCenter] = useState<any>([-31.34, -64.33]); // Córdoba default
+  const [mapCenter, setMapCenter] = useState<any>([20.1011, -98.7591]);
 
   // 📍 Geolocalización automática
   useEffect(() => {
@@ -134,7 +134,7 @@ export default function ContactForm() {
           <div>
             <label className="font-semibold">Selecciona tu ubicación</label>
 
-            <div className="h-64 w-full rounded overflow-hidden mt-2">
+            <div className="h-64 w-full rounded overflow-hidden  mt-2 relative z-0">
               <MapPicker
                 mapCenter={mapCenter}
                 coords={coords}

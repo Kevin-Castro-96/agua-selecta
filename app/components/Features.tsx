@@ -20,7 +20,7 @@ export default function Features() {
   ];
 
   return (
-    <section id="features" className="py-20 bg-white">
+    <section id="porque-elegirnos" className="py-20 bg-white">
       <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 text-center">
         {features.map((f, i) => (
           <div
