@@ -69,6 +69,7 @@ export default function ContactForm() {
       // ✅ Obtener datos del formulario
       const formData = new FormData(formRef.current);
       const name = formData.get("user_name");
+      const email = formData.get("user_email");
       const phone = formData.get("user_phone");
       const address = formData.get("user_address");
 
@@ -78,6 +79,7 @@ export default function ContactForm() {
 Quiero hacer un pedido de Agua Selecta 💧
 
 📞 Teléfono: ${phone}
+    Email: ${email}
 📍 Dirección: ${address}
 🌎 Ubicación: ${location}
 🧭 Coordenadas: ${coords?.lat}, ${coords?.lng}`,
@@ -132,6 +134,16 @@ Quiero hacer un pedido de Agua Selecta 💧
             <input
               type="text"
               name="user_name"
+              required
+              className="w-full border p-3 rounded"
+            />
+          </div>
+          {/* Email */}
+          <div>
+            <label className="font-semibold">Correo electrónico</label>
+            <input
+              type="email"
+              name="user_email"
               required
               className="w-full border p-3 rounded"
             />

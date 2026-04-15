@@ -33,18 +33,18 @@ export default function Header() {
             </li>
             <li>
               <a
-                href="#sobre-nosotros"
-                className="hover:text-blue-300 transition"
-              >
-                Sobre Nosotros
-              </a>
-            </li>
-            <li>
-              <a
                 href="#porque-elegirnos"
                 className="hover:text-blue-300 transition"
               >
                 ¿Por qué elegirnos?
+              </a>
+            </li>
+            <li>
+              <a
+                href="#sobre-nosotros"
+                className="hover:text-blue-300 transition"
+              >
+                Sobre Nosotros
               </a>
             </li>
             <li>
